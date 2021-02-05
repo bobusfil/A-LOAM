@@ -58,6 +58,9 @@
 
 #define DISTORTION 0
 
+// params from launchfile
+std::string mapFrame;
+std::string laserOdomFrame;
 
 int corner_correspondence = 0, plane_correspondence = 0;
 
@@ -189,6 +192,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
 
     nh.param<int>("mapping_skip_frame", skipFrameNum, 2);
+    nh.param<std::string>("mapFrame",mapFrame,"camera_init");
+    nh.param<std::string>("laserOdomFrame",laserOdomFrame,"laser_odom");
 
     printf("Mapping %d Hz \n", 10 / skipFrameNum);
 
@@ -208,9 +213,9 @@ int main(int argc, char **argv)
 
     ros::Publisher pubLaserCloudFullRes = nh.advertise<sensor_msgs::PointCloud2>("/velodyne_cloud_3", 100);
 
-    ros::Publisher pubLaserOdometry = nh.advertise<nav_msgs::Odometry>("/laser_odom_to_init", 100);
+    ros::Publisher pubLaserOdometry = nh.advertise<nav_msgs::Odometry>("laser_odom_to_init", 100);
 
-    ros::Publisher pubLaserPath = nh.advertise<nav_msgs::Path>("/laser_odom_path", 100);
+    ros::Publisher pubLaserPath = nh.advertise<nav_msgs::Path>("laser_odom_path", 100);
 
     nav_msgs::Path laserPath;
 
@@ -509,8 +514,8 @@ int main(int argc, char **argv)
 
             // publish odometry
             nav_msgs::Odometry laserOdometry;
-            laserOdometry.header.frame_id = "/camera_init";
-            laserOdometry.child_frame_id = "/laser_odom";
+            laserOdometry.header.frame_id = mapFrame;
+            laserOdometry.child_frame_id = laserOdomFrame;
             laserOdometry.header.stamp = ros::Time().fromSec(timeSurfPointsLessFlat);
             laserOdometry.pose.pose.orientation.x = q_w_curr.x();
             laserOdometry.pose.pose.orientation.y = q_w_curr.y();
@@ -526,7 +531,7 @@ int main(int argc, char **argv)
             laserPose.pose = laserOdometry.pose.pose;
             laserPath.header.stamp = laserOdometry.header.stamp;
             laserPath.poses.push_back(laserPose);
-            laserPath.header.frame_id = "/camera_init";
+            laserPath.header.frame_id = mapFrame;
             pubLaserPath.publish(laserPath);
 
             // transform corner features and plane features to the scan end point
