@@ -43,25 +43,29 @@ void diffTransformCalc(const tf2_msgs::TFMessage& msg){
 
     std::string frameX_1_w_slash = "/" + frameX_1;
     // if selected transform is detected
-    if(strcmp(msg.transforms.data()->child_frame_id.c_str(),frameX_1_w_slash.c_str()) == 0){
+    for (const auto& transform : msg.transforms) {
+        if (strcmp(transform.child_frame_id.c_str(), frameX_1_w_slash.c_str()) == 0) {
 
-        // declaring a tf Broadcaster of the differencial Transform
-        static tf2_ros::TransformBroadcaster br;
+            // declaring a tf Broadcaster of the differencial Transform
+            static tf2_ros::TransformBroadcaster br;
 
-        // converting the tf2_msgs::TFMessages to Eigen::Isometry3d messages which are capable of the multiplication.
-        Eigen::Isometry3d l2r = tf2::transformToEigen(LaserToRobot);
-        Eigen::Isometry3d m2l = tf2::transformToEigen(mapToLaser.transforms.data()->transform);
+            // converting the tf2_msgs::TFMessages to Eigen::Isometry3d messages which are capable of the multiplication.
+            Eigen::Isometry3d l2r = tf2::transformToEigen(LaserToRobot);
+            Eigen::Isometry3d m2l = tf2::transformToEigen(mapToLaser.transforms.data()->transform);
 
-        // calculating the differential transform from a->b and c->b to a->c
-        diffTrans = m2l*l2r.inverse();
+            // calculating the differential transform from a->b and c->b to a->c
+            diffTrans = m2l * l2r.inverse();
 
-        // converting the transform format back to tgeometry_msgs:TransformStamped
-        geometry_msgs::TransformStamped diffTfTransform = tf2::eigenToTransform(diffTrans);
+            // converting the transform format back to tgeometry_msgs:TransformStamped
+            geometry_msgs::TransformStamped diffTfTransform = tf2::eigenToTransform(diffTrans);
 
-        diffTfTransform.header.frame_id = frameA;
-        diffTfTransform.child_frame_id = frameB;
+            diffTfTransform.header.stamp.sec = transform.header.stamp.toSec();
+            diffTfTransform.header.frame_id = frameA;
+            diffTfTransform.child_frame_id = frameB;
 
-        br.sendTransform(diffTfTransform);
+            br.sendTransform(diffTfTransform);
+            break;
+        }
     }
 }
 

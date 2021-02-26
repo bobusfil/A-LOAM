@@ -230,16 +230,21 @@ void laserOdometryHandler(const nav_msgs::Odometry::ConstPtr &laserOdometry)
 	odomAftMapped.pose.pose.position.z = t_w_curr.z();
 	pubOdomAftMappedHighFrec.publish(odomAftMapped);
 }
-
+/* Filip comment
+ * Whole mapping process is here
+ * */
 void process()
 {
 	while(1)
 	{
+	    // Filip comment: this will run only if we got some odometry and feature points already.
+	    // So this will disable the mapping at the start and after one second od odometry it should start.
 		while (!cornerLastBuf.empty() && !surfLastBuf.empty() &&
 			!fullResBuf.empty() && !odometryBuf.empty())
 		{
 			mBuf.lock();
-			while (!odometryBuf.empty() && odometryBuf.front()->header.stamp.toSec() < cornerLastBuf.front()->header.stamp.toSec())
+			while (!odometryBuf.empty() &&
+			        odometryBuf.front()->header.stamp.toSec() < cornerLastBuf.front()->header.stamp.toSec())
 				odometryBuf.pop();
 			if (odometryBuf.empty())
 			{
@@ -268,6 +273,7 @@ void process()
 			timeLaserCloudFullRes = fullResBuf.front()->header.stamp.toSec();
 			timeLaserOdometry = odometryBuf.front()->header.stamp.toSec();
 
+			// Filip comment if the odometry and features messages do not sync together do not continue
 			if (timeLaserCloudCornerLast != timeLaserOdometry ||
 				timeLaserCloudSurfLast != timeLaserOdometry ||
 				timeLaserCloudFullRes != timeLaserOdometry)
@@ -278,6 +284,7 @@ void process()
 				break;
 			}
 
+			// Filip comment: this just changes the datatype from sensor_msgs::PointCloud2 -> pcl::PointCloud<T>
 			laserCloudCornerLast->clear();
 			pcl::fromROSMsg(*cornerLastBuf.front(), *laserCloudCornerLast);
 			cornerLastBuf.pop();
@@ -562,6 +569,8 @@ void process()
 				kdtreeSurfFromMap->setInputCloud(laserCloudSurfFromMap);
 				printf("build tree time %f ms \n", t_tree.toc());
 
+
+				/* Filip comment: This looks like search for nearest neighbour search for feature points for edge and surface points */
 				for (int iterCount = 0; iterCount < 2; iterCount++)
 				{
 					//ceres::LossFunction *loss_function = NULL;

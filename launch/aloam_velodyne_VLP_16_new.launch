@@ -2,7 +2,7 @@
     <include file="$(find subt_example)/launch/teleop.launch"/>
     
     <arg name="robot"                    default="X1"/>
-    <arg name="mapFrame"                    default="map"/>
+    <arg name="mapFrame"                    default="$(arg robot)/map"/>
     <arg name="mappingFrame"                    default="aft_mapped"/>
     <arg name="baselinkFrame"                    default="$(arg robot)"/>
     <arg name="lidarFrame"                    default="X1/base_link/front_laser"/>
@@ -39,5 +39,16 @@
     <group if="$(arg rviz)">
     <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find aloam_velodyne)/rviz_cfg/aloam_velodyne.rviz" />
     </group>
+
+<!-- ground truth nody -->
+ <node name="ground_truth_publisher" pkg="subt_virtual" type="ground_truth_publisher">
+        <param name="robot_name" value="$(arg robot)"/>
+    </node>
+
+<node name="subt_frame_publisher" pkg="subt_virtual" type="subt_frame_publisher">
+        <param name="robot_name" value="$(arg robot)"/>
+    </node>
+
+
 
 </launch>
