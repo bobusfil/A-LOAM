@@ -45,7 +45,7 @@ target_link_libraries(ascanRegistration ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 add_executable(alaserOdometry src/laserOdometry.cpp)
 target_link_libraries(alaserOdometry ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERES_LIBRARIES})
 
-add_executable(alaserMapping src/laserMapping.cpp src/gtComparator.cpp)
+add_executable(alaserMapping src/laserMapping.cpp)
 target_link_libraries(alaserMapping ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${CERES_LIBRARIES})
 
 add_executable(kittiHelper src/kittiHelper.cpp)
@@ -53,6 +53,9 @@ target_link_libraries(kittiHelper ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_
 
 add_executable(diffTransNode src/diffTransNode.cpp)
 target_link_libraries(diffTransNode ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
+
+add_executable(pathLength src/pathLength.cpp)
+target_link_libraries(pathLength ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
 
 
