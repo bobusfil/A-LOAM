@@ -89,6 +89,7 @@ template <typename PointT>
 void removeClosedPointCloud(const pcl::PointCloud<PointT> &cloud_in,
                               pcl::PointCloud<PointT> &cloud_out, float thres)
 {
+    // if we want to save processed pointCloud to different variable than the original
     if (&cloud_in != &cloud_out)
     {
         cloud_out.header = cloud_in.header;
@@ -97,6 +98,7 @@ void removeClosedPointCloud(const pcl::PointCloud<PointT> &cloud_in,
 
     size_t j = 0;
 
+    // removing all points which are closer than some threshold (given by MINIMUM_RANGE)
     for (size_t i = 0; i < cloud_in.points.size(); ++i)
     {
         if (cloud_in.points[i].x * cloud_in.points[i].x + cloud_in.points[i].y * cloud_in.points[i].y + cloud_in.points[i].z * cloud_in.points[i].z < thres * thres)
@@ -132,15 +134,18 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     std::vector<int> scanStartInd(N_SCANS, 0);
     std::vector<int> scanEndInd(N_SCANS, 0);
 
+    // converting the pointCloud2 msg to pcl pointCloud format
     pcl::PointCloud<pcl::PointXYZ> laserCloudIn;
     pcl::fromROSMsg(*laserCloudMsg, laserCloudIn);
     std::vector<int> indices;
 
+    // cleaning the pointCloud from the nan values
     pcl::removeNaNFromPointCloud(laserCloudIn, laserCloudIn, indices);
     removeClosedPointCloud(laserCloudIn, laserCloudIn, MINIMUM_RANGE);
 
-
     int cloudSize = laserCloudIn.points.size();
+
+    // calculating the angle of the starting and ending point around the robot on the x-y plane
     float startOri = -atan2(laserCloudIn.points[0].y, laserCloudIn.points[0].x);
     float endOri = -atan2(laserCloudIn.points[cloudSize - 1].y,
                           laserCloudIn.points[cloudSize - 1].x) +
@@ -159,13 +164,19 @@ void laserCloudHandler(const sensor_msgs::PointCloud2ConstPtr &laserCloudMsg)
     bool halfPassed = false;
     int count = cloudSize;
     PointType point;
+
+    // setting up a vector for pointClouds
     std::vector<pcl::PointCloud<PointType>> laserCloudScans(N_SCANS);
     for (int i = 0; i < cloudSize; i++)
     {
+        // taking each point from the pointCloud separately
+
+        // getting its coordinates
         point.x = laserCloudIn.points[i].x;
         point.y = laserCloudIn.points[i].y;
         point.z = laserCloudIn.points[i].z;
 
+        // angle of elevation above the x-y plane
         float angle = atan(point.z / sqrt(point.x * point.x + point.y * point.y)) * 180 / M_PI;
         int scanID = 0;
 
