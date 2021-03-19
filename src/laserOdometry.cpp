@@ -132,7 +132,6 @@ void TransformToStart(PointType const *const pi, PointType *const po)
 }
 
 // transform all lidar points to the start of the next frame
-
 void TransformToEnd(PointType const *const pi, PointType *const po)
 {
     // undistort point first
@@ -226,27 +225,34 @@ int main(int argc, char **argv)
     {
         ros::spinOnce();
 
+
         if (!cornerSharpBuf.empty() && !cornerLessSharpBuf.empty() &&
             !surfFlatBuf.empty() && !surfLessFlatBuf.empty() &&
             !fullPointsBuf.empty())
-        {
+        {   // when all buffers has some scans loaded.
+
+            // mark the times of the arrived newly scans [in sec]
             timeCornerPointsSharp = cornerSharpBuf.front()->header.stamp.toSec();
             timeCornerPointsLessSharp = cornerLessSharpBuf.front()->header.stamp.toSec();
             timeSurfPointsFlat = surfFlatBuf.front()->header.stamp.toSec();
             timeSurfPointsLessFlat = surfLessFlatBuf.front()->header.stamp.toSec();
             timeLaserCloudFullRes = fullPointsBuf.front()->header.stamp.toSec();
 
+            // checking if all times of the newly arrived scans are identical
             if (timeCornerPointsSharp != timeLaserCloudFullRes ||
                 timeCornerPointsLessSharp != timeLaserCloudFullRes ||
                 timeSurfPointsFlat != timeLaserCloudFullRes ||
                 timeSurfPointsLessFlat != timeLaserCloudFullRes)
             {
-                printf("unsync messeage!");
+                // if not .. it is bad apparently
+                printf("unsynced message!");
                 ROS_BREAK();
             }
 
             mBuf.lock();
+            // Removes all points in a cloud and sets the width and height to 0.
             cornerPointsSharp->clear();
+            // convert pointCloud to pcl pointCloud
             pcl::fromROSMsg(*cornerSharpBuf.front(), *cornerPointsSharp);
             cornerSharpBuf.pop();
 
@@ -276,6 +282,8 @@ int main(int argc, char **argv)
             }
             else
             {
+                // Counting the number of flat and sharp points calculated from the
+                // scanRegistration.cpp
                 int cornerPointsSharpNum = cornerPointsSharp->points.size();
                 int surfPointsFlatNum = surfPointsFlat->points.size();
 
@@ -572,6 +580,8 @@ int main(int argc, char **argv)
             kdtreeCornerLast->setInputCloud(laserCloudCornerLast);
             kdtreeSurfLast->setInputCloud(laserCloudSurfLast);
 
+            // this gives the frequency with which the mapping is run (i think), because this line
+            // also publishes the topics from which the mappingFrame calculates the stuff...
             if (frameCount % skipFrameNum == 0)
             {
                 frameCount = 0;
