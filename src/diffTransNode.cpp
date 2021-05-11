@@ -75,7 +75,7 @@ int main(int argc, char** argv){
     ros::NodeHandle node;
 
     // load params from launchfile
-    node.param<std::string>("frame1From",frameA,"camera_init");
+    node.param<std::string>("frame1From",frameA,"X1/map");
     node.param<std::string>("frame1To",frameX_1,"aft_mapped");
     node.param<std::string>("frame2From",frameB,"X1");
     node.param<std::string>("frame2To",frameX_2,"X1/base_link/front_laser");

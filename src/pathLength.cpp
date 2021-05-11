@@ -12,9 +12,7 @@ bool tfDetected = false;
 Eigen::Isometry3d currentTransform;
 Eigen::Isometry3d newTransform;
 
-/**
- * This tutorial demonstrates simple receipt of messages over the ROS system.
- */
+
 void lengthIncrement(const tf2_msgs::TFMessage& msg)
 {
     // if selected transform is detected

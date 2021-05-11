@@ -57,6 +57,6 @@ target_link_libraries(diffTransNode ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenC
 add_executable(pathLength src/pathLength.cpp)
 target_link_libraries(pathLength ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 
-
-
+add_executable(tf_tree_connect src/tf_tree_connect.cpp)
+target_link_libraries(tf_tree_connect ${catkin_LIBRARIES} ${PCL_LIBRARIES} ${OpenCV_LIBS})
 

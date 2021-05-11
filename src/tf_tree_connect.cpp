@@ -38,7 +38,12 @@ int main(int argc, char** argv){
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener tfListener(tfBuffer);
     ROS_INFO("class initialised");
-    ros::Duration(4).sleep();
+    node.param<std::string>("tree_1_From", trans1a,"world");
+    node.param<std::string>("tree_1_To", trans1b, "X1_ground_truth");
+    node.param<std::string>("tree_2_From", trans2a, "X1/map");
+    node.param<std::string>("tree_2_To", trans2b, "X1");
+
+    ros::Duration(1).sleep();
     ROS_INFO("sleep done");
     if(!transCreated){
         // all necessary transforms are available
@@ -64,18 +69,18 @@ int main(int argc, char** argv){
             } catch (tf2::TransformException &ex) {
                 ROS_WARN("Could NOT transform X1/map to X1: %s", ex.what());
             }
-            Eigen::Isometry3d worldMapTrans = tf2::transformToEigen(worldTrans.transform)*tf2::transformToEigen(mapTrans.transform).inverse();
+            Eigen::Isometry3d worldMapTrans = tf2::transformToEigen(mapTrans.transform)*tf2::transformToEigen(worldTrans.transform).inverse();
             geometry_msgs::TransformStamped static_world_map_transform = tf2::eigenToTransform(worldMapTrans);
             static_world_map_transform.header.stamp = ros::Time::now();
             static_world_map_transform.header.frame_id = trans1a;
             static_world_map_transform.child_frame_id = trans2a;
+            static_world_map_transform.header.stamp = mapTrans.header.stamp;
             static_broadcaster.sendTransform(static_world_map_transform);
             transCreated = true;
         }
     }
     ROS_INFO("sub done");
     ros::spin();
-    ROS_INFO("4");
     return 0;
 }
 
